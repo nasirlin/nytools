@@ -29,14 +29,17 @@ app.get('/', (req, res) => {
 
 try {
     require('./apps/chat')(io, redis);
-    console.log('TZ [Module] Chat Loaded');
+    console.log('✅ [Module] Chat Loaded');
     
-    // 尚未提供的程式碼可以用註解先關起來，避免報錯
-    // require('./apps/drop')(io, redis, app); 
-    // require('./apps/piano')(io, app);    
+    require('./apps/drop')(io, redis);
+    console.log('✅ [Module] Drop Loaded');
+
+    require('./apps/piano')(io, redis);    
+    console.log('✅ [Module] Piano Loaded');
     
 } catch (error) {
-    console.error('Module Loading Error:', error);
+    console.error('❌ Module Loading Error:', error);
+    console.error(error.stack);
 }
 
 const PORT = process.env.PORT || 3000;
