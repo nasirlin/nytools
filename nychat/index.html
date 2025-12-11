@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NY線上客服系統</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/index.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+
+    <div class="main-container container">
+        <div class="row" style="width: 100%; margin-bottom: 0;">
+            <div class="col s12 m8 offset-m2 l6 offset-l3">
+                
+                <div class="card z-depth-3 chat-card">
+                    
+                    <div class="card-header">
+                        <i class="material-icons">support_agent</i>
+                        <span style="font-size: 1.2rem; font-weight: 500;">線上客服系統</span>
+                    </div>
+
+                    <div class="card-content-area">
+                        
+                        <div id="status-area">
+                            <div class="preloader-wrapper big active">
+                                <div class="spinner-layer spinner-blue-only">
+                                  <div class="circle-clipper left">
+                                    <div class="circle"></div>
+                                  </div><div class="gap-patch">
+                                    <div class="circle"></div>
+                                  </div><div class="circle-clipper right">
+                                    <div class="circle"></div>
+                                  </div>
+                                </div>
+                            </div>
+                            <h5 id="status-text" class="grey-text text-darken-2" style="margin-top: 20px;">
+                                連線中...
+                            </h5>
+                        </div>
+
+                        <div id="chat-box" style="display: none;">
+                            </div>
+
+                    </div>
+
+                    <div id="input-area-wrapper" class="card-footer" style="display: none;">
+                        <div class="input-field">
+                            <input id="msgInput" type="text" autocomplete="off">
+                            <label for="msgInput">輸入訊息...</label>
+                        </div>
+                        <div class="send-btn-wrapper">
+                            <button onclick="sendMessage()" class="btn-floating btn-large waves-effect waves-light blue">
+                                <i class="material-icons">send</i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                </div>
+        </div>
+    </div>
+
+    <footer class="page-footer-custom">
+        Copyright © 2025 NTUB 11346061
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        const socket = io("https://nytools.onrender.com/chat");
+        
+        let partnerId = null;
+        const statusArea = document.getElementById('status-area');
+        const statusText = document.getElementById('status-text');
+        const chatBox = document.getElementById('chat-box');
+        const inputBox = document.getElementById('input-area-wrapper');
+        const msgInput = document.getElementById('msgInput');
+        socket.on('connect', () => {
+            console.log("Connected");
+            updateStatus("正在尋找客服人員...");
+            socket.emit('customer_join');
+        });
+        socket.on('status', (data) => {
+            console.log("Status:", data);
+
+            if (data.code === 'waiting') {
+                // A. 排隊中
+                showChatUI(false);
+                updateStatus(data.msg);
+            } 
+            else if (data.code === 'chatting') {
+                // B. 配對成功
+                partnerId = data.partnerId;
+                showChatUI(true);
+                chatBox.innerHTML = ''; 
+                addMessage("🎉 " + data.msg, 'system');
+            }
+            else if (data.code === 'ended') {
+                // C. 結束
+                addMessage("對方已離開對話", 'system');
+                M.toast({html: '對話已結束', classes: 'rounded red'}); 
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+
+        // 3. 排隊人數更新
+        socket.on('queue_update', (count) => {
+            if (!partnerId) {
+                updateStatus(`目前忙線中<br><span style="font-size:0.8em">候位人數：${count} 人</span>`);
+            }
+        });
+
+        // 4. 接收訊息
+        socket.on('receive_message', (data) => {
+            addMessage(data.msg, 'partner');
+        });
+
+        // --- 輔助功能 ---
+        function sendMessage() {
+            const msg = msgInput.value.trim();
+            if (msg && partnerId) {
+                socket.emit('send_message', { to: partnerId, msg: msg });
+                addMessage(msg, 'mine');
+                msgInput.value = '';
+            }
+        }
+
+        msgInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function addMessage(msg, type) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            div.innerText = msg;
+            chatBox.appendChild(div);
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+        }
+
+        function updateStatus(html) {
+            statusText.innerHTML = html;
+        }
+
+        // 切換顯示模式 (排隊 vs 聊天)
+        function showChatUI(isChatting) {
+            if (isChatting) {
+                statusArea.style.display = 'none';
+                chatBox.style.display = 'flex';
+                inputBox.style.display = 'flex';
+            } else {
+                statusArea.style.display = 'flex';
+                chatBox.style.display = 'none';
+                inputBox.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

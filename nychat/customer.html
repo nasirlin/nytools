@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NY線上客服後台系統</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/server.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+
+    <div class="main-container container">
+        <div class="row" style="width: 100%; margin-bottom: 0;">
+            <div class="col s12 m8 offset-m2 l6 offset-l3">
+                
+                <div class="card z-depth-3 chat-card">
+                    
+                    <div class="card-header">
+                        <div class="header-title">
+                            <i class="material-icons">headset_mic</i>
+                            <span>客服 (Agent)</span>
+                        </div>
+                        <span id="header-status-dot" style="height: 10px; width: 10px; background-color: #bdbdbd; border-radius: 50%; display: inline-block;"></span>
+                    </div>
+
+                    <div class="card-content-area">
+                        
+                        <div id="status-area">
+                            <div class="preloader-wrapper big active">
+                                <div class="spinner-layer spinner-green-only">
+                                  <div class="circle-clipper left">
+                                    <div class="circle"></div>
+                                  </div><div class="gap-patch">
+                                    <div class="circle"></div>
+                                  </div><div class="circle-clipper right">
+                                    <div class="circle"></div>
+                                  </div>
+                                </div>
+                            </div>
+                            <h5 id="status-text" class="grey-text text-darken-2" style="margin-top: 20px;">
+                                等待連線...
+                            </h5>
+                        </div>
+
+                        <div id="chat-box" style="display: none;"></div>
+
+                    </div>
+
+                    <div id="input-area-wrapper" class="card-footer" style="display: none;">
+                        <div class="input-field">
+                            <input id="msgInput" type="text" autocomplete="off">
+                            <label for="msgInput">回覆客人...</label>
+                        </div>
+                        
+                        <button onclick="sendMessage()" class="btn-floating btn-large waves-effect waves-light green tooltipped" data-position="top" data-tooltip="發送訊息">
+                            <i class="material-icons">send</i>
+                        </button>
+
+                        <button onclick="nextCustomer()" class="btn-floating btn-large waves-effect waves-light red tooltipped" data-position="top" data-tooltip="結束並接下一位">
+                            <i class="material-icons">skip_next</i>
+                        </button>
+                    </div>
+
+                </div>
+                </div>
+        </div>
+    </div>
+
+    <footer class="page-footer-custom">
+        Copyright © 2025 NTUB 11346061
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        //這個是要跟後端連線的位置！ 
+        const socket = io("https://nytools.onrender.com/chat");
+        
+        let partnerId = null;
+        
+        // DOM 元素
+        const statusArea = document.getElementById('status-area');
+        const statusText = document.getElementById('status-text');
+        const chatBox = document.getElementById('chat-box');
+        const inputBox = document.getElementById('input-area-wrapper');
+        const msgInput = document.getElementById('msgInput');
+        const headerDot = document.getElementById('header-status-dot');
+
+        // 初始化 Tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('.tooltipped');
+            M.Tooltip.init(elems);
+        });
+
+        // 1. 連線後告知身分
+        socket.on('connect', () => {
+            console.log("Agent Connected");
+            updateStatusText("已連線，等待系統分派客人...");
+            socket.emit('agent_join');
+            headerDot.style.backgroundColor = "#ffeb3b"; // 黃燈 (準備中)
+        });
+
+        // 2. 接收狀態 (核心邏輯)
+        socket.on('status', (data) => {
+            console.log("Status:", data);
+            
+            // 雖然 data.msg 有文字，但我們想用自定義的 UI 文字
+            if (data.code === 'chatting') {
+                // 配對成功
+                partnerId = data.partnerId;
+                showChatUI(true);
+                chatBox.innerHTML = ''; // 清空舊對話
+                addMessage("⚡ 系統：已配對一位客人，開始對話！", 'system'); // 自定義系統提示
+                headerDot.style.backgroundColor = "#76ff03"; // 綠燈 (通話中)
+                M.toast({html: '新客人已接入！', classes: 'rounded green'});
+            } else if (data.code === 'idle') {
+                // 閒置 / 等待中
+                partnerId = null;
+                showChatUI(false);
+                updateStatusText(data.msg); // "目前沒有客人，等待中..."
+                headerDot.style.backgroundColor = "#bdbdbd"; // 灰燈 (閒置)
+            }
+        });
+
+        // 3. 接收訊息
+        socket.on('receive_message', (data) => {
+            addMessage(data.msg, 'partner');
+        });
+
+        // --- 輔助功能 ---
+        function sendMessage() {
+            const msg = msgInput.value.trim();
+            if (msg && partnerId) {
+                socket.emit('send_message', { to: partnerId, msg: msg });
+                addMessage(msg, 'mine');
+                msgInput.value = '';
+            }
+        }
+
+        // 綁定 Enter 鍵
+        msgInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function nextCustomer() {
+            if(confirm("確定要結束目前的對話，並尋找下一位客人嗎？")) {
+                 // 最簡單的方式：重整頁面，重新觸發 connect -> agent_join
+                 // 這樣可以確保狀態最乾淨
+                 location.reload();
+            }
+        }
+
+        function addMessage(msg, type) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            // 系統訊息特殊處理
+            if (type === 'system') {
+                div.style.fontSize = '0.8rem';
+                div.style.color = '#9e9e9e';
+                div.style.background = 'none';
+                div.style.boxShadow = 'none';
+                div.style.textAlign = 'center';
+                div.style.alignSelf = 'center';
+            }
+            div.innerText = msg;
+            chatBox.appendChild(div);
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+        }
+
+        function updateStatusText(text) {
+            statusText.innerText = text;
+        }
+
+        // 切換顯示模式
+        function showChatUI(isChatting) {
+            if (isChatting) {
+                statusArea.style.display = 'none';
+                chatBox.style.display = 'flex';
+                inputBox.style.display = 'flex';
+            } else {
+                statusArea.style.display = 'flex';
+                chatBox.style.display = 'none';
+                inputBox.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="luxury">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NY Console</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/jpeg" href="https://i.meee.com.tw/5RwHaKn.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+</head>
+<body class="min-h-screen flex flex-col bg-base-300">
+
+    <div class="navbar bg-base-100 shadow-md z-10">
+        <div class="flex-1">
+            <a class="btn btn-ghost text-xl tracking-widest text-warning">NY CONSOLE</a>
+        </div>
+        <div class="flex-none gap-2">
+            <div class="badge badge-success gap-2">
+             Online
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow p-6 container mx-auto max-w-5xl">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="md:col-span-2 card bg-base-100 shadow-xl border border-warning/20">
+                <div class="card-body">
+                    <h2 class="card-title text-xs uppercase tracking-widest opacity-60">Now Playing</h2>
+                    <div class="flex items-center gap-4 my-2">
+                        <div class="loading loading-bars loading-lg text-warning"></div>
+                        <h1 id="now-playing" class="text-3xl md:text-4xl font-bold text-white truncate">等待播放...</h1>
+                    </div>
+                    <div class="card-actions justify-end mt-4">
+                        <button onclick="playNext()" class="btn btn-warning btn-lg text-black hover:scale-105 transition-transform">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            播放下一首 / 切歌
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body items-center text-center justify-center">
+                    <div class="stat-title">待彈總數</div>
+                    <div class="stat-value text-secondary" id="queue-count">0</div>
+                    <div class="stat-desc">Songs in Queue</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl overflow-hidden">
+            <div class="card-header p-4 border-b border-white/10 flex justify-between items-center bg-base-200">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                    待彈清單
+                </h3>
+                <button class="btn btn-xs btn-ghost" onclick="requestPlaylistUpdate()">刷新</button>
+            </div>
+            
+            <div class="overflow-x-auto h-[500px] overflow-y-auto">
+                <table class="table table-zebra table-pin-rows w-full">
+                    <thead>
+                        <tr class="bg-base-300 text-white">
+                            <th class="w-16">序號</th>
+                            <th>歌曲名稱</th>
+                            <th class="w-24 text-right">管理</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playlist">
+                        <tr><td colspan="3" class="text-center p-8 opacity-50">載入中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer footer-center p-4 bg-base-300 text-base-content opacity-50 border-t border-base-100">
+        <aside><p>Copyright 2025 NYPIANO</p></aside>
+    </footer>
+
+    <div class="toast toast-end z-50" id="toast-container"></div>
+    <script src="function/survice.js"></script>
+    <script>
+        // ★★★ 請記得換成你的 Render 網址 ★★★
+        const socket = io("https://YOUR_PROJECT_NAME.onrender.com");
+
+        // ★★★ 關鍵：一連線就宣示主權，啟動系統 ★★★
+        socket.on('connect', () => {
+            console.log("Admin Connected!");
+            socket.emit('admin_join'); 
+        });
+
+        socket.on('update_playlist', (list) => {
+            renderList(list);
+            document.getElementById('queue-count').innerText = list.length;
+        });
+
+        socket.on('now_playing', (song) => {
+            document.getElementById('now-playing').innerText = song;
+            showToast(`🎵 現在播放：${song}`, 'alert-info');
+        });
+
+        socket.on('admin_notification', (msg) => {
+            showToast(msg, 'alert-success');
+        });
+
+        function requestPlaylistUpdate() {} // 備用
+        function playNext() { if(confirm("確定要切換到下一首嗎？")) socket.emit('play_next'); }
+        function deleteSong(songName) { if(confirm(`確定要從清單中刪除「${songName}」嗎？`)) socket.emit('delete_song', songName); }
+
+        function renderList(list) {
+            const tbody = document.getElementById('playlist');
+            tbody.innerHTML = '';
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center p-8 opacity-50">目前沒有待播歌曲</td></tr>`;
+                return;
+            }
+            list.forEach((song, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover";
+                tr.innerHTML = `<th class="font-mono text-warning">${index + 1}</th><td class="font-medium text-lg">${song}</td><td class="text-right"><div class="tooltip" data-tip="刪除歌曲"><button class="btn btn-square btn-sm btn-outline btn-error" onclick="deleteSong('${song}')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showToast(msg, type) {
+            const container = document.getElementById('toast-container');
+            const div = document.createElement('div');
+            div.className = `alert ${type} shadow-lg mb-2`;
+            div.innerHTML = `<span>${msg}</span>`;
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

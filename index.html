@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NY TOOLS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Songti TC", "Noto Serif TC", "SimSun", "PMingLiU", "Times New Roman", serif;
+            background-color: #fdfdfd;
+            color: #1a1a1a;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            letter-spacing: 0.15em; 
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            opacity: 0;
+            animation: fadeIn 1.5s ease-out forwards;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
+            letter-spacing: 0.3em;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .link-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .group-title {
+            font-size: 1.3rem;
+            color: #555;
+            letter-spacing: 0.25em;
+        }
+
+        .link-row {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        a {
+            text-decoration: none;
+            color: #333;
+            font-size: 1rem;
+            padding: 0.5rem 0.8rem;
+            transition: all 0.4s ease;
+            position: relative;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        a:hover {
+            color: #000;
+            letter-spacing: 0.25em;
+            opacity: 0.7;
+        }
+
+        a::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 1px;
+            bottom: 0;
+            left: 50%;
+            background-color: #333;
+            transition: all 0.4s ease;
+        }
+
+        a:hover::after {
+            width: 50%;
+            left: 25%;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 2rem;
+            font-size: 0.7rem;
+            color: #999;
+            letter-spacing: 0.2em;
+            opacity: 0;
+            animation: fadeIn 2s ease-out 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 2.5rem;
+            }
+            .link-row {
+                gap: 1.5rem;
+            }
+            a {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>NY TOOLS</h1>
+        
+        <nav class="nav-links">
+            
+            <div class="link-group">
+                <div class="group-title">NY CHAT</div>
+                <div class="link-row">
+                    <a href="/nychat">客人端</a>
+                    <a href="/nychat/customer.html">客服端</a>
+                </div>
+            </div>
+
+            <div class="link-group">
+                <div class="group-title">NY PIANO</div>
+                <div class="link-row">
+                    <a href="/nypiano">點歌端</a>
+                    <a href="/nypiano/backend.html">後台端</a>
+                </div>
+            </div>
+
+            <div class="link-group">
+                <a href="/nydrop" style="font-size: 1.3rem; letter-spacing: 0.2em;">NY DROP</a>
+            </div>
+
+        </nav>
+    </div>
+
+    <footer>
+        &copy; 2025 NY Tools
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+
+        body {
+            background-color: #e8f5e9; /* 淺綠背景 */
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        /* 主容器：垂直置中 */
+        .main-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        /* 卡片設定 */
+        .chat-card {
+            height: 80vh;
+            max-height: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* 標題列：改用綠色 */
+        .card-header {
+            background-color: #388e3c; /* Green darken-2 */
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+            justify-content: space-between; /* 讓標題和狀態分開 */
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .header-title i { margin-right: 10px; }
+
+        /* 內容區域 */
+        .card-content-area {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 狀態顯示區 */
+        #status-area {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* 聊天訊息區 */
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 底部輸入區 */
+        .card-footer {
+            padding: 10px 20px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* 按鈕之間的間距 */
+        }
+
+        .input-field {
+            margin: 0 !important;
+            flex: 1;
+        }
+
+        /* 氣泡樣式 */
+        .msg {
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            clear: both;
+        }
+        /* 客服自己的訊息 (綠色) */
+        .msg.mine {
+            background-color: #4caf50; /* Green */
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        /* 客人的訊息 (白色) */
+        .msg.partner {
+            background-color: white;
+            color: #424242;
+            align-self: flex-start;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Footer 樣式 */
+        .page-footer-custom {
+            text-align: center;
+            padding: 15px;
+            color: #81c784; /* 淺綠色文字 */
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
