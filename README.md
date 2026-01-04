@@ -42,11 +42,11 @@
 ### HOW TO USE
 
 #### 對於使用者 (User)
-1. 點 [Ny Chat 連結](https://nasircy.github.io/nychat) 即可開始使用！
+1. 點 [Ny Chat 連結](https://nasircy.github.io/nytools/nychat) 即可開始使用！
 2. 若客服忙線中，系統會幫你進行排隊駐列。
 
 #### 對於管理員 (Admin)
-1. 點 [Ny Chat 客服頁面連結](https://nasircy.github.io/nychat/server.html) 即可開始使用！
+1. 點 [Ny Chat 客服頁面連結](https://nasircy.github.io/nytools/nychat/server.html) 即可開始使用！
 2. 系統會自動從 Redis 佇列中取出最優先的等待者。
 3. 開始進行一對一對話。
 
@@ -123,7 +123,7 @@
 ### HOW TO USE 
 
 1. **開始點歌**
- 點擊 [NYPIANO](https://nasircy.github.io/nypiano)
+ 點擊 [NYPIANO](https://nasircy.github.io/nytools/nypiano)
 
 2. **輸入歌曲**
    在輸入框中填入你想聽的歌曲名稱。
