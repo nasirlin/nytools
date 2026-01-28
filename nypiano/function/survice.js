@@ -1,5 +1,5 @@
 
-        const socket = io("https://nytools.onrender.com/piano");
+        const socket = io("https://nytools.nasirlin.net/piano");
         socket.on('connect', () => {
             console.log("Admin Connected!");
             socket.emit('admin_join'); 

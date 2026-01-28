@@ -1,5 +1,5 @@
 
-        const socket = io("https://nytools.onrender.com/piano");
+        const socket = io("https://nytools.nasirlin.net/piano");
         const toastEl = document.getElementById('liveToast');
         const toast = new bootstrap.Toast(toastEl);
         const overlay = document.getElementById('offline-overlay');
